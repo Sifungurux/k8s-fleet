@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: k8s-fleet
+  namespace: flux-system
+spec:
+  interval: 1m
+  # Update this URL after pushing the repo to GitHub
+  url: https://github.com/${GITHUB_USER}/k8s-fleet
+  # Set GITHUB_USER before running bootstrap.sh — envsubst replaces the variable above
+  ref:
+    branch: main

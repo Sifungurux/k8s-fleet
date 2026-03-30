@@ -1,0 +1,6 @@
+# Flux secrets — never commit these
+**secret*.yaml
+**secrets*.yaml
+
+# Local overrides
+*.local.yaml

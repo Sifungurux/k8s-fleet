@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: COMPONENT_NAME        # replace with your component name
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: COMPONENT_NAME      # must match metadata.name in gitrepository.yaml
+  path: ./deploy              # path inside the target repo containing manifests
+  prune: true
+  dependsOn:
+    - name: infrastructure    # waits for core infra before deploying
