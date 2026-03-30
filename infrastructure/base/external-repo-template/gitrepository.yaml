@@ -1,0 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: COMPONENT_NAME        # replace with your component name
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/OWNER/REPO   # replace with the target repo URL
+  ref:
+    branch: main
+  # Uncomment if the repo is private:
+  # secretRef:
+  #   name: COMPONENT_NAME-auth
