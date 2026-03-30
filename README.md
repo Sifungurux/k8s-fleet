@@ -53,6 +53,53 @@ cp apps/dev-cluster/kustomization.yaml apps/<name>/
 GITHUB_USER=<you> CLUSTER=<name> CLUSTER_CONTEXT=<kubectl-context> ./bootstrap/bootstrap.sh
 ```
 
+## How it works
+
+### Bootstrap sequence (one-time)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Script as bootstrap.sh
+    participant Helm
+    participant Cluster as Kubernetes
+    participant Flux as Flux Controllers
+    participant GitHub as GitHub (k8s-fleet)
+
+    User->>Script: GITHUB_USER=x CLUSTER=dev-cluster
+    Script->>Cluster: pre-flight checks (context, nodes reachable)
+    Script->>Helm: helm install flux (fluxcd-community/flux2)
+    Helm->>Cluster: deploy Flux controllers (source, kustomize, helm)
+    Script->>Cluster: kubectl apply GitRepository
+    Script->>Cluster: kubectl apply Kustomization (infrastructure)
+    Script->>Cluster: kubectl apply Kustomization (apps)
+    Flux->>GitHub: poll repo every 1m
+    GitHub-->>Flux: return manifests
+    Flux->>Cluster: reconcile infrastructure/base/flux → HelmRelease
+    Flux->>Cluster: Flux now manages itself via HelmRelease ✔
+```
+
+### Ongoing GitOps reconciliation loop
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant GitHub as GitHub (k8s-fleet)
+    participant Flux as Flux Controllers
+    participant Cluster as Kubernetes
+
+    Dev->>GitHub: git push (e.g. bump Flux version)
+    loop Every 1 minute
+        Flux->>GitHub: poll for changes
+        GitHub-->>Flux: new commit detected
+    end
+    Flux->>Flux: run kustomize build / helm diff
+    Flux->>Cluster: apply infrastructure changes
+    Note over Flux,Cluster: apps Kustomization waits for infrastructure via dependsOn
+    Flux->>Cluster: apply apps changes
+    Cluster-->>Flux: reconciliation complete
+```
+
 ## Bootstrap a cluster (first time)
 
 Prerequisites:
