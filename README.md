@@ -159,6 +159,23 @@ Edit `infrastructure/base/flux/helmrelease.yaml`, bump the `version` field, and 
 version: ">=2.8.0 <3.0.0"   # bump this
 ```
 
+## Why this repo is separate from k8s-colima-cluster
+
+This repo defines what runs on clusters (Flux GitOps). [k8s-colima-cluster](https://github.com/Sifungurux/k8s-colima-cluster) provisions the local cluster (Colima + k3d). They are intentionally kept as two separate repos.
+
+**Pros of keeping them separate**
+- This repo is cluster-agnostic — it can manage a local dev cluster, a staging cloud cluster, or both; any cluster can be bootstrapped by pointing Flux at this repo
+- Flux watches this repo only; no need to filter out unrelated shell scripts and Colima configs
+- Different change frequencies — provisioning scripts change rarely, GitOps manifests change often
+- This layer can be shared or open-sourced independently of local machine setup
+
+**Cons (why you might consider merging)**
+- Two repos to clone and maintain
+- `FLUX_GITOPS_DIR` in `k8s-colima-cluster`'s Makefile must point at the correct local path for this repo
+- Extra context switching for a solo developer
+
+> **Verdict:** keep them separate. The split pays off as soon as you add a second cluster (staging, CI, etc.) — this repo scales to manage all of them while `k8s-colima-cluster` stays focused on local dev setup.
+
 ## Day-to-day commands
 
 ```bash
